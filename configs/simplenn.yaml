@@ -1,0 +1,9 @@
+criterion: CrossEntropyLoss
+optimizer: Adam
+lr: 0.001
+batch_size: 64
+shuffle: true
+num_workers: 4
+val_size: 0.1
+save_dir: simple_nn
+num_epochs: 2
