@@ -1,24 +1,12 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+
+from models.simple_nn.simple_nn import SimpleNN
 from utils.trainers import BPTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os
-
-# Define a simple neural network model
-class SimpleNN(nn.Module):
-    def __init__(self):
-        super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(28 * 28, 128)
-        self.fc2 = nn.Linear(128, 10)
-
-    def forward(self, x):
-        x = x.view(-1, 28 * 28)  # Flatten the input
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
-        x = torch.log_softmax(x, dim=1)  # Log softmax for multi-class classification
-        return x
 
 if __name__ == "__main__":
     config = "simplenn.yaml"  # Path to your YAML config file
@@ -44,7 +32,7 @@ if __name__ == "__main__":
 
     # Save the config file in the save directory
     os.makedirs(config["save_dir"], exist_ok=True)
-    save_path = os.path.join("models", config["save_dir"])
+    save_path = os.path.join("../models", config["save_dir"])
     os.makedirs(save_path, exist_ok=True)
     with open(os.path.join(save_path, "config.yaml"), "w") as f_out:
         yaml.dump(config, f_out)
