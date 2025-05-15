@@ -1,22 +1,20 @@
 import torch
+import torch
 import torch.nn as nn
-import torch.optim as optim
-
-from models.simple_nn.simple_nn import SimpleNN
-from utils.trainers import BPTrainer
+from models.chain_ff.chain_ff import ChainFF
+from utils.trainers import FFTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os
 
 if __name__ == "__main__":
-    config = "simplenn.yaml"  # Path to your YAML config file
+    config = "chainff.yaml"  # Path to your YAML config file
     with open(f"../configs/{config}", "r") as f:
         config = yaml.safe_load(f)
 
-    # Initialize the model, criterion, optimizer, and device
-    model = SimpleNN()
+    # Initialize the model and device
+    model = ChainFF()
     criterion = getattr(nn, config["criterion"])()
-    optimizer = getattr(optim, config["optimizer"])(model.parameters(), lr=config["lr"])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Data loader parameters from config
@@ -27,8 +25,8 @@ if __name__ == "__main__":
     )
     train_loader, val_loader, test_loader = data_loader.load_data(val_size=config["val_size"])
 
-    # Initialize the trainer (assuming BPTrainer is defined in utils/trainers.py)
-    trainer = BPTrainer(model, criterion, optimizer, train_loader, val_loader, test_loader, device)
+    # Initialize the trainer
+    trainer = FFTrainer(model, criterion, train_loader, val_loader, test_loader, device, learning_rate=config["lr"], threshold=2.0)
 
     # Save the config file in the save directory
     os.makedirs(config["save_dir"], exist_ok=True)
@@ -38,8 +36,8 @@ if __name__ == "__main__":
         yaml.dump(config, f_out)
 
     # Train the model
-    trainer.train(num_epochs=config["num_epochs"], save_interval = 5, path = config["save_dir"])  # Adjust the number of epochs as needed
+    trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
     trainer.test()
 
-    #save final model
+    # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
