@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from models.simple_nn.simple_nn import SimpleNN
-from utils.trainers import BPTrainer
+from BPTrainer import BPTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os
@@ -34,12 +34,12 @@ if __name__ == "__main__":
     os.makedirs(config["save_dir"], exist_ok=True)
     save_path = os.path.join("../models", config["save_dir"])
     os.makedirs(save_path, exist_ok=True)
-    with open(os.path.join(save_path, "config.yaml"), "w") as f_out:
+    with open(os.path.join(save_path, "config_final_model.yaml"), "w") as f_out:
         yaml.dump(config, f_out)
 
     # Train the model
     trainer.train(num_epochs=config["num_epochs"], save_interval = 5, path = config["save_dir"])  # Adjust the number of epochs as needed
     trainer.test()
 
-    #save final model
+    # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))

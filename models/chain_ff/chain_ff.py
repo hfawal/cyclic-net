@@ -5,11 +5,11 @@ import torch.nn as nn
 class ChainFF(nn.Module):
     def __init__(self):
         super(ChainFF, self).__init__()
-        self.fc1 = nn.Linear(28 * 28 + 10, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, 128)
-        self.fc4 = nn.Linear(128, 128)
-        self.readout = nn.Linear(4 * 128, 10)
+        self.fc1 = nn.Linear(28 * 28 + 10, 2000)
+        self.fc2 = nn.Linear(2000, 2000)
+        self.fc3 = nn.Linear(2000, 2000)
+        self.fc4 = nn.Linear(2000, 2000)
+        self.readout = nn.Linear(4 * 2000, 10)
 
     def forward(self, x):
         a1, a2, a3, a4 = self.forward_activations(x)
@@ -29,6 +29,7 @@ class ChainFF(nn.Module):
         return a1_norm, a2_norm, a3_norm, a4_norm
 
     def forward_readout(self, a1, a2, a3, a4):
+        # concat = torch.cat([a2, a3, a4], dim=1)
         concat = torch.cat([a1, a2, a3, a4], dim=1)
         readout = self.readout(concat)
         x = torch.log_softmax(readout, dim=1)  # Log softmax for multi-class classification

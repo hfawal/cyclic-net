@@ -1,8 +1,0 @@
-batch_size: 64
-criterion: CrossEntropyLoss
-lr: 0.1
-num_epochs: 5
-num_workers: 4
-save_dir: simple_nn
-shuffle: true
-val_size: 0.1
