@@ -20,9 +20,50 @@
 
 \section{Introduction}
 
+\mycomment{
+Instructions:
+A  few  sentences  placing  the  work  in  context. Limit it to a few paragraphs at most; if your report is on reproducing a piece of work, you do not have to motivate that work. However, it should be clear enough what the original paper is about and what its contributions are.
+
+For original work, we expect a short elevator pitch with motivation.
+
+For a summary of a line of theoretical work, we expect a short summary about this line of work. This can start out from a paper with a key theoretical result, or a recent paper which highlights an extension of an established research direction.}
+
 \section{Scope of the Project}
 
+\mycomment{
+Instructions:
+Depending on the type of your project you should scope the project through claims that you want to reproduce, theory papers that you want to summarize, our hypotheses you want to test in original research. 
+
+Make the scope as specific as possible. It should be something that can be supported or rejected by your data in the case of experimentation or should be about a particular area / problem in theory. For example, this scope is too broad and lacks precise outcome (what is ``strong performance''?): ``Contextual embedding models have shown strong performance on a number of tasks across NLP. We will run experiments evaluating two types of contextual embedding models on datasets X, Y, and Z.''
+
+This scope is better because it's more specific and has an outcome that can be either supported or rejected based on your work: ``Finetuning pretrained BERT on SST-2 will have higher accuracy than an LSTM trained with GloVe embeddings.''
+
+Similarly, "What are the emergent properties of neural network?" is too vague, while "How does grokking happen in neural networks for modular addition?" is specific.
+
+\subsection{Addressed Claims/Hypothesis from the Original Paper} \label{claims}
+
+Clearly enumerate the claims you are testing:
+\begin{enumerate}
+    \item Claim 1 / Hypothesis 1 
+    \item Claim 2 / Hypothesis 2
+    \item Claim 3 / Hypothesis 3
+\end{enumerate}
+
+In the case of a summary of theory papers you should list here all papers you want to summarize or discuss which can include, for example, previous work, follow-up work, different perspective.
+Also state the main theoretical results (theorems and / or algorithms) your summary is about.
+}
+
 \section{Methodology}
+
+\mycomment{
+Instructions:
+This section is to explain your approach---did you use someone's code as a starting point, did you aim to reimplement the approach from the paper description or extend it? Summarize the resources (code, documentation, GPUs) that you used. 
+
+For experimental work, also describe (1) the model used, (2) the data used, (3) the hyperparamters used, (4) if you extend existing code or write new code, (5) experimental setup, (6) estimation and acutual computational requirements.
+
+In case of the summarizing theoretical work, describe how you go about literature review / picking the particular relevant sources.
+Also describe why you are focusing on the specific results you are highlighting in your summary.
+}
 
 
 \end{document}
