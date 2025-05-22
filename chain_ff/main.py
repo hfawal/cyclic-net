@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from models.chain_ff.chain_ff import ChainFF
 from FFTrianer import FFTrainer
-from utils.data_loader import MnistDataloader
+from utils.mnist_data_loader import MnistDataloader
 import yaml
 import os
 
