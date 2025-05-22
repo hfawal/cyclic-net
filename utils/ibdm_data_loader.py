@@ -13,12 +13,18 @@ class IMDBDataLoader:
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.num_workers = num_workers
-        self.text_pipeline = None
-        self.label_pipeline = None
+        self.vocab = None
+        self.embeddings = None
+
+    def text_pipeline(self, x):
+        return [self.vocab.get(token, self.vocab['<unk>']) for token in self.tokenizer(x)]
+
+    def label_pipeline(self, x):
+        return 1 if x == 'pos' else 0
 
     def load_data(self, val_size = 0.1):
         # Define tokenizer
-        tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
+        self.tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
         # Load IMDB dataset
         train_iter, test_iter = IMDB(split=('train', 'test'), root='./data')
@@ -33,23 +39,25 @@ class IMDBDataLoader:
         # Build vocabulary using GloVe embeddings
         counter = Counter()
         for (label, line) in train_data:
-            counter.update(tokenizer(line))
+            counter.update(self.tokenizer(line))
 
         # Initialize GloVe embeddings
         glove = GloVe(name='6B', dim=100)
-
+        
         # Create a custom vocabulary that maps tokens to indices
-        vocab = {token: idx for idx, token in enumerate(glove.stoi.keys())}
-        vocab['<unk>'] = len(vocab)  # Add unknown token
+        self.vocab = {token: idx for idx, token in enumerate(glove.stoi.keys())}
+        self.vocab['<unk>'] = len(self.vocab)  # Add unknown token
 
-        # Define text and label pipelines
-        self.text_pipeline = lambda x: [vocab.get(token, vocab['<unk>']) for token in tokenizer(x)]
-        self.label_pipeline = lambda x: 1 if x == 'pos' else 0
+        # Create <unk> vector as mean of all GloVe vectors
+        unk_vector = torch.mean(glove.vectors, dim=0)
+        
+        # Concatenate the <unk> vector to the embeddings
+        self.embeddings = torch.cat([glove.vectors, unk_vector.unsqueeze(0)], dim=0)
 
-        # Create iterators for train, validation and test
-        train_iter = iter(train_data)
-        val_iter = iter(val_data)
-        test_iter = iter(test_iter)
+        # # Create iterators for train, validation and test
+        # train_iter = iter(train_data)
+        # val_iter = iter(val_data)
+        # test_iter = iter(test_iter)
     
         train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=self.shuffle, num_workers=self.num_workers, collate_fn=self.collate_batch)
         val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, collate_fn=self.collate_batch)
@@ -61,8 +69,12 @@ class IMDBDataLoader:
         label_list, text_list = [], []
         for (_label, _text) in batch:
             label_list.append(self.label_pipeline(_label))
-            processed_text = torch.tensor(self.text_pipeline(_text), dtype=torch.float)
-            text_list.append(processed_text)
+            # Get token indices
+            token_indices = self.text_pipeline(_text)
+            # Convert indices to embeddings
+            embeddings = self.embeddings[token_indices]
+            text_list.append(embeddings)
+        # Pad the sequences of embeddings
         text_list = pad_sequence(text_list, batch_first=True)
         label_list = torch.tensor(label_list, dtype=torch.float)
         return text_list, label_list
