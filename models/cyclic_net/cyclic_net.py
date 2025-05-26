@@ -51,11 +51,11 @@ class CyclicNet(nn.Module):
         """
         Computes the forward pass of this cyclic network given the input data.
 
-        :param x: Input data tensor, with shape (<anything>, n) where n is the number of examples
+        :param x: Input data tensor, with shape (n, <anything>) where n is the number of examples
         to evaluate the network on. Even when there is only 1 example, we require n to be present.
 
         :return: The prediction of this network on each example in x. This is a tensor with shape
-        (<anything>, n).
+        (n, <anything>).
         """
 
         activations_sink = None
@@ -90,7 +90,7 @@ class CyclicNet(nn.Module):
         Computes the activations of all neurons in the graph, based on previous activations and
         new input data, one time. Stores outputs in the provided dictionaries.
 
-        :param x: The input data to the network at this time step. Shape: (<anything>, n) where
+        :param x: The input data to the network at this time step. Shape: (n, <anything>) where
         n is the number of examples to evaluate the network on. Even when there is only 1 example,
         we require that n = 1 be explicitly present.
         :param activations_sink: The previous activations of all neurons in the network, organized
@@ -108,7 +108,7 @@ class CyclicNet(nn.Module):
         :return: next_activations_source, next_activations_sink.
         """
 
-        n: int = x.shape[-1]
+        n: int = x.shape[0]
 
         # Source maps capture the activations that a neuron sends to its outneighbors.
         # Indexed by map[source][outneighbor].
@@ -135,11 +135,11 @@ class CyclicNet(nn.Module):
             # Generate the zeros for the regular neuron inneighbor dictionaries.
             for current in activations_sink.keys():
                 for inneighbor, dim in self.neurons[current].inneighbor_dims.items():
-                    activations_sink[current][inneighbor] = torch.zeros(dim + (n,))
+                    activations_sink[current][inneighbor] = torch.zeros((n,) + dim)
             # Generate the zeros for the inneighbors of the readout neuron.
             activations_sink[-1] = dict()
             for inneighbor, dim in self.readout_neuron.inneighbor_dims.items():
-                activations_sink[-1][inneighbor] = torch.zeros(dim + (n,))
+                activations_sink[-1][inneighbor] = torch.zeros((n,) + dim)
 
         # Now compute neurons sequentially and write to the next activation dictionaries.
         # In theory this step should be parallelizable but due to the python GIL we would need to

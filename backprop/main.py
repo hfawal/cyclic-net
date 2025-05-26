@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from models.simple_nn.simple_nn import SimpleNN
-from BPTrainer import BPTrainer
+from bp_trainer import BPTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os

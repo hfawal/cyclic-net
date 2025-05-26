@@ -67,7 +67,7 @@ class Neuron(ABC):
         :param neighbor_outputs: The outputs of in-neighbor neurons, formatted in a map from
         the neighbor's ID to a tensor.
         :param input_data: The input data to the task, if this neuron is an input neuron. The shape
-        should be (<anything>, n) where n is the number of examples. Tensors in the output
+        should be (n, <anything>) where n is the number of examples. Tensors in the output
         will correspondingly have n as their last dimension.
         :return: The output of this neuron computed from in-neighbor outputs and potential input.
         Formatted as a dictionary of outneighbor IDs and the output vector for that outneighbor.
