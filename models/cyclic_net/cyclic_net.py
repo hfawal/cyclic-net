@@ -28,13 +28,21 @@ class CyclicNet(nn.Module):
 
         :param neurons: A mapping of zero-indexed neuron IDs to Neuron objects.
         :param number_iterations: The number of iterations this cyclic net propagates outputs.
-        :param readout_neuron: The readout neuron with ID -1 (not appearing in graph).
+        :param readout_neuron: The readout neuron with ID -1 (should not appear in neurons map).
         """
 
         super(CyclicNet, self).__init__()
         self.neurons = neurons
         self.number_iterations = number_iterations
         self.readout_neuron = readout_neuron
+
+        # Register the compute neuron parameters properly to be saved by PyTorch.
+        for ID in self.neurons.keys():
+            for i, param in enumerate(self.neurons[ID].params):
+                self.register_parameter(f"params_{ID}_{i}", param)
+        # Register readout neuron parameters.
+        for i, param in enumerate(self.readout_neuron.params):
+            self.register_parameter(f"params_readout_{i}", param)
 
 
     def forward(self,
@@ -58,10 +66,10 @@ class CyclicNet(nn.Module):
         for i in range(self.number_iterations):
 
             next_activations_source, next_activations_sink = self.propagate(
-                x, # Pass data.
+                x, # Pass input data.
                 activations_sink, # Use previous activations.
-                next_activations_source, # Source output dictionary.
-                next_activations_sink # Sink output dictionary.
+                next_activations_source, # Source-based output dictionary.
+                next_activations_sink # Sink-based output dictionary.
             )
 
             # Swap the dictionaries for the next iteration.
@@ -148,7 +156,3 @@ class CyclicNet(nn.Module):
                 next_activations_sink[outneighbor][current] = actvtn
 
         return next_activations_source, next_activations_sink
-
-
-
-
