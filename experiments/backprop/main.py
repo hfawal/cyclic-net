@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from models.simple_nn.simple_nn import SimpleNN
-from bp_trainer import BPTrainer
+from models.simple_nn.bp_trainer import BPTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     # Save the config file in the save directory
     os.makedirs(config["save_dir"], exist_ok=True)
-    save_path = os.path.join("../models", config["save_dir"])
+    save_path = os.path.join(".", config["save_dir"])
     os.makedirs(save_path, exist_ok=True)
     with open(os.path.join(save_path, "config_final_model.yaml"), "w") as f_out:
         yaml.dump(config, f_out)

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from models.chain_ff.chain_ff import ChainFF
-from ff_trainer import FFTrainer
+from models.chain_ff.ff_trainer import FFTrainer
 from utils.data_loader import MnistDataloader
 import yaml
 import os
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     # Save the config file in the save directory
     os.makedirs(config["save_dir"], exist_ok=True)
-    save_path = os.path.join("../models", config["save_dir"])
+    save_path = os.path.join(".", config["save_dir"])
     os.makedirs(save_path, exist_ok=True)
     with open(os.path.join(save_path, "config_final_model.yaml"), "w") as f_out:
         yaml.dump(config, f_out)
