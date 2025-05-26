@@ -76,11 +76,11 @@ class CyclicTrainer:
         We generalize the formula to the case that neurons can pass different activations to each
         of their outneighbors - compute the mean over the goodness of each activation vector
         per outneighbor. When neurons are only allowed to pass the same activation to all of
-        their outneighbors, this reduces to the same formula as in the Cylic Net paper.
+        their outneighbors, this reduces to the same formula as in the Cyclic Net paper.
 
         :param activations_source: The dictionary of neuron activations, organized by source to
         outneighbor neuron. The entry activations_source[B][A] is the activation that neuron B will
-        pass to outneighbor neuron A on the next iteration of the cylic net propagation.
+        pass to outneighbor neuron A on the next iteration of the cyclic net propagation.
 
         :return: A dictionary of the goodness of each neuron's activations. The keys are neuron IDs
         and the values are goodness tensors, shape (B,) where B is the batch size.
@@ -120,7 +120,7 @@ class CyclicTrainer:
 
     def train(self, num_epochs):
         """
-        Trains the cylic net for the given number of epochs. This modifies the model in-place.
+        Trains the cyclic net for the given number of epochs. This modifies the model in-place.
 
         :param num_epochs: The number of iterations over the training set to train the model.
 

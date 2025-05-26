@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Any
 
 from torch import Tensor
 from torch.nn import Parameter
@@ -9,51 +9,101 @@ from torch.nn import Parameter
 class Neuron(ABC):
 
     @property
-    @abstractmethod
     def ID(self) -> int:
         """
         A unique identifier for this neuron.
         """
-        pass
+        return self._ID
+
+    @ID.setter
+    def ID(self, value: Any):
+        self.check_ID("ID", value)
+        self._ID = value
 
     @property
-    @abstractmethod
+    def inneighbor_dims(self) -> Dict[int, Tuple[int, ...]]:
+        """
+        The shape of the activations this neuron receives from each inneighbor.
+        """
+        return self._inneighbor_dims
+
+    @inneighbor_dims.setter
+    def inneighbor_dims(self, value: Any):
+        self.check_shape_dict("inneighbor_dims", value)
+        self._inneighbor_dims = value
+
+
+    @property
     def output_dims(self) -> Dict[int, Tuple[int, ...]]:
         """
         The output shape of this neuron's output per outneighbor.
         """
-        pass
+        return self._output_dims
+
+    @output_dims.setter
+    def output_dims(self, value: Any):
+        self.check_shape_dict("output_dims", value)
+        self._output_dims = value
 
     @property
-    @abstractmethod
+    def input_data_dim(self) -> Tuple[int, ...]:
+        """
+        Returns the shape of the input that this Neuron expects, if it's an input neuron.
+        """
+        return self._input_data_dim
+
+    @input_data_dim.setter
+    def input_data_dim(self, value: Any):
+        self.check_shape_tuple("input_data_dim", value)
+        self._input_data_dim = value
+
+    @property
     def is_input_neuron(self) -> bool:
         """
         Whether this neuron needs input data from the task at hand (classifying images, etc)
         or only needs to take the outputs of its inneighbor neurons.
         """
-        pass
+        return self._is_input_neuron
 
-    @property
-    @abstractmethod
-    def input_data_dim(self) -> Tuple[int, ...]:
-        """
-        Returns the shape of the input that this Neuron expects, if it's an input neuron.
-        """
-        pass
+    @is_input_neuron.setter
+    def is_input_neuron(self, value: Any):
+        self.check_bool("is_input_neuron", value)
+        self._is_input_neuron = value
 
-    @property
-    @abstractmethod
-    def inneighbor_dims(self) -> Dict[int, Tuple[int, ...]]:
+
+    def __init__(self,
+                 ID: int,
+                 inneighbor_dims: Dict[int, Tuple[int, ...]],
+                 output_dims: Dict[int, Tuple[int, ...]],
+                 input_data_dim: Tuple[int, ...],
+                 is_input_neuron: bool
+                 ):
         """
-        Returns a map from ID of inneighbors to output shape of inneighbor.
+        Initializes the neuron with the given key fields. Subclasses of Neuron remain
+        responsible for setting the params field and implementing compute().
+
+        :param ID: A unique identifier for this neuron.
+        :param inneighbor_dims: The shape of the activations this neuron receives from each of
+        its inneighbors.
+        :param output_dims: The output shape of this neuron's output per outneighbor.
+        :param input_data_dim: Returns the shape of the input that this Neuron expects, if it's
+        an input neuron.
+        :param is_input_neuron: Whether this neuron needs input data from the task at hand
+        (classifying images, etc.) or only needs to take the outputs of its inneighbor neurons.
         """
-        pass
+
+        self.ID = ID
+        self.inneighbor_dims = inneighbor_dims
+        self.output_dims = output_dims
+        self.input_data_dim = input_data_dim
+        self.is_input_neuron = is_input_neuron
+
 
     @property
     @abstractmethod
     def params(self) -> List[Parameter]:
         """
-        Returns the learnable parameters of this neuron.
+        Returns a list of the learnable parameters of this neuron.
         """
         pass
 
@@ -73,3 +123,40 @@ class Neuron(ABC):
         Formatted as a dictionary of outneighbor IDs and the output vector for that outneighbor.
         """
         pass
+
+
+
+    # ------------------------------------- Helpers ---------------------------------------------- #
+
+    def check_ID(self, name: str, value: Any):
+        if not isinstance(value, int):
+            self.error(name, "of type int", type(value))
+        if value < -1:
+            self.error(name, ">= -1", value)
+
+    def check_bool(self, name: str, value: Any):
+        if not isinstance(value, bool):
+            self.error(name, "of type bool", type(value))
+
+    def check_shape_tuple(self, name: str, value: Any):
+        if not isinstance(value, tuple):
+            self.error(name, "of type tuple", type(value))
+        if len(value) == 0:
+            self.error(name, "non-empty", value)
+        for elem in value:
+            if not isinstance(elem, int):
+                self.error(name + " tuple element", "of type int", type(elem))
+            if elem <= 0:
+                self.error(name + " tuple element", "positive", elem)
+
+    def check_shape_dict(self, name: str, value: Any):
+        if not isinstance(value, dict):
+            self.error(name, "of type dict", type(value))
+        if len(value) == 0:
+            self.error(name, "non-empty", value)
+        for ID, shape in value.items():
+            self.check_ID(name + " key", ID)
+            self.check_shape_tuple(name + " value", shape)
+
+    def error(self, name: str, expected: str, value: Any):
+        raise ValueError(f"Expected {name} to be {expected}, found {value}.")

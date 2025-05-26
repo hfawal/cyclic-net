@@ -24,7 +24,7 @@ class CyclicNet(nn.Module):
         of certain neurons at the user's discretion. It is functionally a "sink" node
         that does not participate in propagation, with inneighbors specified through the object.
         The readout neuron itself should output to a nonexistent neuron with ID -2, which we treat
-        as the overall output of the cylic net.
+        as the overall output of the cyclic net.
 
         :param neurons: A mapping of zero-indexed neuron IDs to Neuron objects.
         :param number_iterations: The number of iterations this cyclic net propagates outputs.
