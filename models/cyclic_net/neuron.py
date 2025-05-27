@@ -129,7 +129,7 @@ class Neuron(ABC):
         if not isinstance(value, int):
             self.error(name, "of type int", type(value))
         if value < -2:
-            self.error(name, ">= -1", value)
+            self.error(name, ">= -2", value)
 
     def check_bool(self, name: str, value: Any):
         if not isinstance(value, bool):

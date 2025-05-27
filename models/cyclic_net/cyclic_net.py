@@ -75,10 +75,28 @@ class CyclicNet(nn.Module):
             # Swap the dictionaries for the next iteration.
             activations_sink, next_activations_sink = next_activations_sink, activations_sink
 
-        # Call the readout neuron with the final activations.
-        result = self.readout_neuron.compute(activations_sink[-1])
+        return self.readout(activations_sink)
 
-        return result[-2]
+    def readout(self,
+                activations_sink: Dict[int, Dict[int, Tensor]]
+                ) -> Tensor:
+        """
+        Computes the final readout of the cyclic net based on the activations given.
+
+        :param activations_sink: The previous activations of all neurons in the network, organized
+        as a sink-based dictionary. activations_sink[A][B] is the activation that the inneighbor
+        neuron B passes to the neuron A. Defaults to zero tensors if not provided.
+
+        :return: The prediction of the neural network.
+        """
+
+        # Detach the inneighbor activations from PyTorch's computation graph.
+        for inneighbor, actvtn in activations_sink[-1].items():
+            activations_sink[-1][inneighbor] = actvtn.detach()
+
+        # Call the readout neuron with the final activations.
+        return self.readout_neuron.compute(activations_sink[-1])[-2]
+
 
     def propagate(self,
                   x: Tensor,

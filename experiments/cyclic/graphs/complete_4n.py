@@ -56,7 +56,7 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
             ID=nid,
             inneighbor_dims=inneighbor_dims[nid],
             output_dims=adjacency_list[nid],
-            input_data_dim=(1, 28, 28),
+            input_data_dim=(794,),
             is_input_neuron=True,
         )
     return neurons
@@ -67,7 +67,7 @@ def build_readout_layer() -> Neuron:
         ID=-1,
         inneighbor_dims=readout_inneighbor_dims,
         output_dims={-2: (10,)},
-        input_data_dim=(1, 28, 28),
+        input_data_dim=(794,),
         is_input_neuron=False,
     )
 

@@ -137,15 +137,23 @@ class CyclicTrainer:
             "neuron_loss": {ID: [] for ID in self.model.neurons.keys()},
             "readout_loss": []
         }
+
         torch.autograd.set_detect_anomaly(True)
+
+        print("Moving model to device.")
+
         # Move model to device.
         self.model.to(self.device)
+
+        print("Entered Train Function.")
 
         # Main training loop.
         for epoch in range(1, num_epochs + 1):
 
             # Batch loop.
             for positive, negative, neutral, label in self.train_loader:
+
+                print("Entered batch loop.")
 
                 # Move batch data to device.
                 positive = positive.to(self.device)
@@ -160,9 +168,8 @@ class CyclicTrainer:
                 neg_act_sink = None
                 neg_next_act_source = None
                 neg_next_act_sink = None
-                neu_act_sink = None
-                neu_next_act_source = None
-                neu_next_act_sink = None
+
+                print("Beginning propagation.")
 
                 # Propagate the neurons for some number of iterations.
                 for i in range(self.model.number_iterations):
@@ -191,15 +198,7 @@ class CyclicTrainer:
                     # Swap the dictionaries for the next iteration.
                     neg_act_sink, neg_next_act_sink = neg_next_act_sink, neg_act_sink
 
-                    # Propagate the neutral inputs.
-                    neu_next_act_source, neu_next_act_sink = self.model.propagate(
-                        neutral,  # Pass input data.
-                        neu_act_sink,  # Use previous activations.
-                        neu_next_act_source,  # Source-based output dictionary.
-                        neu_next_act_sink  # Sink-based output dictionary.
-                    )
-                    # Swap the dictionaries for the next iteration.
-                    neu_act_sink, neu_next_act_sink = neu_next_act_sink, neu_act_sink
+                    print("Completed one propagation.")
 
                     # Compute the goodness and loss for computational neurons.
                     pos_goodness = self.compute_goodness(pos_next_act_source)
@@ -213,15 +212,18 @@ class CyclicTrainer:
                         # Record the loss.
                         results["neuron_loss"][ID].append(loss[ID].item())
 
-                # Compute the loss for the readout neuron and optimize.
-                self.readout_optimizer.zero_grad()
-                prediction = self.model.readout_neuron.compute(neu_act_sink[-1])[-2]
-                readout_loss = self.criterion(prediction, label)
+                    print("Completed one computational neuron optimizer step.")
 
-                readout_loss.backward()
-                self.readout_optimizer.step()
+                # Compute the loss for the readout neuron.
+                self.readout_optimizer.zero_grad()
+                prediction = self.model.forward(neutral)
+                readout_loss = self.criterion(prediction, label)
                 # Record the readout loss.
                 results["readout_loss"].append(readout_loss.item())
+
+                # Optimize the readout neuron.
+                readout_loss.backward()
+                self.readout_optimizer.step()
 
             # Compute and record the validation accuracy.
             validation_acc = self.validate()
@@ -248,8 +250,8 @@ class CyclicTrainer:
             for positive, negative, neutral, label in self.val_loader:
 
                 # Move batch data to device.
-                neutral = neutral.to(self.device)
-                label = label.to(self.device)
+                # neutral = neutral.to(self.device)
+                # label = label.to(self.device)
 
                 # Compute the number of correct predictions.
                 output = self.model.forward(neutral)
@@ -278,8 +280,8 @@ class CyclicTrainer:
             for positive, negative, neutral, label in self.test_loader:
 
                 # Move batch data to device.
-                neutral = neutral.to(self.device)
-                label = label.to(self.device)
+                # neutral = neutral.to(self.device)
+                # label = label.to(self.device)
 
                 # Compute the number of correct predictions.
                 output = self.model.forward(neutral)

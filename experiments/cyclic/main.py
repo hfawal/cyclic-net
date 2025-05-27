@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 
 from models.cyclic_net.cyclic_net import CyclicNet
 from models.cyclic_net.cyclic_trainer import CyclicTrainer

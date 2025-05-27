@@ -22,42 +22,70 @@ class ContrastiveDataset(Dataset):
         self.num_classes = num_classes
         self.flatten_examples = flatten_examples
 
-        self.data = []
-
         # Set PyTorch seed for consistent random number generation.
         self.generator = torch.Generator().manual_seed(seed)
+
+        # Load all data to determine sizes.
+        base_data = list(base_dataset)
+        self.length = len(base_data)
+
+        # Get shape of single example.
+        example, _ = base_data[0]
+        example_shape = example.view(-1).shape if flatten_examples else example.shape
+        example_size = example_shape.numel()
+        concat_size = example_size + num_classes
+        self.original_shape = example_shape
+
+        # Allocate tensors to store the contrastive data.
+        self.pos_examples = torch.empty((self.length, concat_size))
+        self.neg_examples = torch.empty((self.length, concat_size))
+        self.neu_examples = torch.empty((self.length, concat_size))
+        self.labels = torch.empty((self.length,), dtype=torch.long)
 
         # Precompute neutral one-hot vector (all equal probs)
         self.neutral_label = torch.ones(num_classes) / num_classes
 
-        for image, label in base_dataset:
+        # Fill the allocated tensors.
+        for i, (data, label) in enumerate(base_data):
 
             # Optionally flatten examples.
-            if self.flatten_examples:
-                data_proc = image.view(-1)
-            else:
-                data_proc = image
+            data_proc = data.view(-1) if flatten_examples else data
 
             # One-hot correct label, concatenate to data.
             label_one_hot = funcs.one_hot(torch.tensor(label), num_classes).float()
-            pos_example = torch.cat([data_proc, label_one_hot], dim=0)
+            self.pos_examples[i] = torch.cat([data_proc, label_one_hot], dim=0)
 
             # One-hot incorrect label, concatenate to data.
             torch.randint(1, self.num_classes, (1,)).item()
             offset = torch.randint(1, self.num_classes, (1,), generator=self.generator)
             wrong_label = ((label + offset) % self.num_classes).item()
             wrong_label_one_hot = funcs.one_hot(torch.tensor(wrong_label), num_classes).float()
-            neg_example = torch.cat([data_proc, wrong_label_one_hot], dim=0)
+            self.neg_examples[i] = torch.cat([data_proc, wrong_label_one_hot], dim=0)
 
             # One-hot neutral label, concatenate to data.
-            neu_example = torch.cat([data_proc, self.neutral_label], dim=0)
+            self.neu_examples[i] = torch.cat([data_proc, self.neutral_label], dim=0)
 
-            self.data.append((pos_example, neg_example, neu_example, label))
+            # Integer label.
+            self.labels[i] = label
 
 
     def __len__(self):
-        return len(self.data)
-
+        return self.length
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        # Retrieve the data from the stored tensors.
+        pos = self.pos_examples[idx]
+        neg = self.neg_examples[idx]
+        neu = self.neu_examples[idx]
+        label = self.labels[idx]
+
+        # Unflatten the examples if necessary.
+        if not self.flatten_examples:
+            pos_example = pos[:-self.num_classes].reshape(self.original_shape)
+            neg_example = neg[:-self.num_classes].reshape(self.original_shape)
+            neu_example = neu[:-self.num_classes].reshape(self.original_shape)
+            pos = torch.cat([pos_example.view(-1), pos[-self.num_classes:]], dim=0)
+            neg = torch.cat([neg_example.view(-1), neg[-self.num_classes:]], dim=0)
+            neu = torch.cat([neu_example.view(-1), neu[-self.num_classes:]], dim=0)
+
+        return pos, neg, neu, label
