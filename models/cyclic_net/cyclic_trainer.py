@@ -17,7 +17,7 @@ class CyclicTrainer:
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  test_loader: DataLoader,
-                 device: str,
+                 device: torch.device,
                  init_lr: Dict[int, float],
                  readout_init_lr: float,
                  thresholds: Dict[int, float]
@@ -113,8 +113,9 @@ class CyclicTrainer:
 
         loss = dict()
         for ID in self.model.neurons.keys():
-            loss[ID] = -torch.log(torch.sigmoid(pos_goodness[ID] - self.thresholds[ID]))
-            loss[ID] -= torch.log(torch.sigmoid(self.thresholds[ID] - neg_goodness[ID]))
+            loss_tensor = -torch.log(torch.sigmoid(pos_goodness[ID] - self.thresholds[ID]))
+            loss_tensor -= torch.log(torch.sigmoid(self.thresholds[ID] - neg_goodness[ID]))
+            loss[ID] = loss_tensor.mean()
         return loss
 
 
@@ -136,7 +137,7 @@ class CyclicTrainer:
             "neuron_loss": {ID: [] for ID in self.model.neurons.keys()},
             "readout_loss": []
         }
-
+        torch.autograd.set_detect_anomaly(True)
         # Move model to device.
         self.model.to(self.device)
 
@@ -216,7 +217,8 @@ class CyclicTrainer:
                 self.readout_optimizer.zero_grad()
                 prediction = self.model.readout_neuron.compute(neu_act_sink[-1])[-2]
                 readout_loss = self.criterion(prediction, label)
-                readout_loss.backwards()
+
+                readout_loss.backward()
                 self.readout_optimizer.step()
                 # Record the readout loss.
                 results["readout_loss"].append(readout_loss.item())

@@ -45,7 +45,7 @@ class ContrastiveDataset(Dataset):
             # One-hot incorrect label, concatenate to data.
             torch.randint(1, self.num_classes, (1,)).item()
             offset = torch.randint(1, self.num_classes, (1,), generator=self.generator)
-            wrong_label = (label + offset) % self.num_classes
+            wrong_label = ((label + offset) % self.num_classes).item()
             wrong_label_one_hot = funcs.one_hot(torch.tensor(wrong_label), num_classes).float()
             neg_example = torch.cat([data_proc, wrong_label_one_hot], dim=0)
 

@@ -32,7 +32,6 @@ class Neuron(ABC):
         self.check_shape_dict("inneighbor_dims", value)
         self._inneighbor_dims = value
 
-
     @property
     def output_dims(self) -> Dict[int, Tuple[int, ...]]:
         """
@@ -70,7 +69,6 @@ class Neuron(ABC):
         self.check_bool("is_input_neuron", value)
         self._is_input_neuron = value
 
-
     def __init__(self,
                  ID: int,
                  inneighbor_dims: Dict[int, Tuple[int, ...]],
@@ -97,7 +95,6 @@ class Neuron(ABC):
         self.output_dims = output_dims
         self.input_data_dim = input_data_dim
         self.is_input_neuron = is_input_neuron
-
 
     @property
     @abstractmethod
@@ -131,7 +128,7 @@ class Neuron(ABC):
     def check_ID(self, name: str, value: Any):
         if not isinstance(value, int):
             self.error(name, "of type int", type(value))
-        if value < -1:
+        if value < -2:
             self.error(name, ">= -1", value)
 
     def check_bool(self, name: str, value: Any):
