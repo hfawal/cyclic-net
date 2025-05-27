@@ -1,7 +1,9 @@
 from typing import Dict, Tuple
 
 from models.cyclic_net.neuron import Neuron
-from models.cyclic_net.neurons.LinearReLU import LinearReLU
+from models.cyclic_net.neurons.HeterogeneousLinearReLU import HeterogeneousLinearReLU
+from models.cyclic_net.neurons.HomogeneousLinearReLU import HomogeneousLinearReLU
+from models.cyclic_net.neurons.LinearLogSoftmax import LinearLogSoftmax
 
 # Each node sends a (10,) vector to every other node (except itself)
 adjacency_list: Dict[int, Dict[int, Tuple[int, ...]]] = {
@@ -33,7 +35,7 @@ thresholds: Dict[int, float] = {
     3: 2,
 }
 
-readout_init_lr: float = 0.5
+readout_init_lr: float = 0.05
 
 
 def invert_graph() -> Dict[int, Dict[int, Tuple[int, ...]]]:
@@ -52,7 +54,7 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
     inneighbor_dims = invert_graph()
     neurons = {}
     for nid in adjacency_list:
-        neurons[nid] = LinearReLU(
+        neurons[nid] = HomogeneousLinearReLU(
             ID=nid,
             inneighbor_dims=inneighbor_dims[nid],
             output_dims=adjacency_list[nid],
@@ -63,7 +65,7 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
 
 
 def build_readout_layer() -> Neuron:
-    return LinearReLU(
+    return LinearLogSoftmax(
         ID=-1,
         inneighbor_dims=readout_inneighbor_dims,
         output_dims={-2: (10,)},

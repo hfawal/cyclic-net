@@ -113,8 +113,15 @@ class CyclicTrainer:
 
         loss = dict()
         for ID in self.model.neurons.keys():
-            loss_tensor = -torch.log(torch.sigmoid(pos_goodness[ID] - self.thresholds[ID]))
-            loss_tensor -= torch.log(torch.sigmoid(self.thresholds[ID] - neg_goodness[ID]))
+            max_val = 100 * self.thresholds[ID]
+
+            pos_input = (pos_goodness[ID] - self.thresholds[ID]).clamp(max=max_val)
+            neg_input = (self.thresholds[ID] - neg_goodness[ID]).clamp(max=max_val)
+
+            pos_term = torch.log(torch.sigmoid(pos_input).clamp(min=1e-7))
+            neg_term = torch.log(torch.sigmoid(neg_input).clamp(min=1e-7))
+
+            loss_tensor = -pos_term - neg_term
             loss[ID] = loss_tensor.mean()
         return loss
 
@@ -153,7 +160,7 @@ class CyclicTrainer:
             # Batch loop.
             for positive, negative, neutral, label in self.train_loader:
 
-                print("Entered batch loop.")
+                # print("Entered batch loop.")
 
                 # Move batch data to device.
                 positive = positive.to(self.device)
@@ -169,7 +176,7 @@ class CyclicTrainer:
                 neg_next_act_source = None
                 neg_next_act_sink = None
 
-                print("Beginning propagation.")
+                # print("Beginning propagation.")
 
                 # Propagate the neurons for some number of iterations.
                 for i in range(self.model.number_iterations):
@@ -198,7 +205,7 @@ class CyclicTrainer:
                     # Swap the dictionaries for the next iteration.
                     neg_act_sink, neg_next_act_sink = neg_next_act_sink, neg_act_sink
 
-                    print("Completed one propagation.")
+                    # print("Completed one propagation.")
 
                     # Compute the goodness and loss for computational neurons.
                     pos_goodness = self.compute_goodness(pos_next_act_source)
@@ -212,7 +219,7 @@ class CyclicTrainer:
                         # Record the loss.
                         results["neuron_loss"][ID].append(loss[ID].item())
 
-                    print("Completed one computational neuron optimizer step.")
+                    # print("Completed one computational neuron optimizer step.")
 
                 # Compute the loss for the readout neuron.
                 self.readout_optimizer.zero_grad()
@@ -232,7 +239,7 @@ class CyclicTrainer:
 
         return results
 
-
+    @torch.no_grad()
     def validate(self) -> float:
         """
         Computes the accuracy of the current model on the validation set. This assumes that the
@@ -250,8 +257,8 @@ class CyclicTrainer:
             for positive, negative, neutral, label in self.val_loader:
 
                 # Move batch data to device.
-                # neutral = neutral.to(self.device)
-                # label = label.to(self.device)
+                neutral = neutral.to(self.device)
+                label = label.to(self.device)
 
                 # Compute the number of correct predictions.
                 output = self.model.forward(neutral)
