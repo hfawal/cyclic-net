@@ -5,5 +5,5 @@ shuffle: true
 num_workers: 4
 val_size: 0.1
 save_dir: saves
-num_epochs: 20
+num_epochs: 3
 num_iter: 3

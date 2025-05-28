@@ -287,8 +287,8 @@ class CyclicTrainer:
             for positive, negative, neutral, label in self.test_loader:
 
                 # Move batch data to device.
-                # neutral = neutral.to(self.device)
-                # label = label.to(self.device)
+                neutral = neutral.to(self.device)
+                label = label.to(self.device)
 
                 # Compute the number of correct predictions.
                 output = self.model.forward(neutral)
