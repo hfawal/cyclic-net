@@ -29,10 +29,10 @@ init_lr: Dict[int, float] = {
 }
 
 thresholds: Dict[int, float] = {
-    0: 200,
-    1: 200,
-    2: 200,
-    3: 200,
+    0: 1,
+    1: 1,
+    2: 1,
+    3: 1,
 }
 
 readout_init_lr: float = 0.05

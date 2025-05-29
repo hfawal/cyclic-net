@@ -99,7 +99,7 @@ class CyclicTrainer:
 
             goodness_per_activation = []
             for actvtn in activations.values():
-                dims_to_sum = list(range(1, len(actvtn)))
+                dims_to_sum = list(range(1, len(actvtn.shape)))
                 goodness_per_activation.append(actvtn.pow(2).sum(dim=dims_to_sum))
 
             goodness[ID] = torch.stack(goodness_per_activation, dim=0).mean(dim=0)
