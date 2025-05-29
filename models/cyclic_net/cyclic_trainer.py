@@ -68,7 +68,7 @@ class CyclicTrainer:
         )
 
         # Save average output sizes used to calculate goodness-based loss.
-        self.avg_output_sizes = dict()
+        self.avg_output_sizes: Dict[int, float] = dict()
         for ID, neuron in self.model.neurons.items():
             size = 0
             for dim in neuron.output_dims.values():
@@ -125,13 +125,23 @@ class CyclicTrainer:
 
         loss = dict()
         for ID in self.model.neurons.keys():
+
             max_abs = 100 * self.thresholds[ID] * self.avg_output_sizes[ID]
+            max_clamp = torch.ones(pos_goodness[ID].shape) * max_abs
+            max_clamp = max_clamp.to(pos_goodness[ID].device)
+            min_clamp = max_clamp * -1
+
             pos_input = pos_goodness[ID] - self.avg_output_sizes[ID] * self.thresholds[ID]
             neg_input = self.avg_output_sizes[ID] * self.thresholds[ID] - neg_goodness[ID]
-            pos_term = torch.log(torch.sigmoid(pos_input.clamp(min=-max_abs, max=max_abs)))
-            neg_term = torch.log(torch.sigmoid(neg_input.clamp(min=-max_abs, max=max_abs)))
+            pos_input = pos_input.clamp(min=min_clamp, max=max_clamp)
+            neg_input = neg_input.clamp(min=min_clamp, max=max_clamp)
+
+            pos_term = torch.log(torch.sigmoid(pos_input).clamp(min=1e-25))
+            neg_term = torch.log(torch.sigmoid(neg_input).clamp(min=1e-25))
+
             loss_tensor = -pos_term - neg_term
             loss[ID] = loss_tensor.mean()
+
         return loss
 
 

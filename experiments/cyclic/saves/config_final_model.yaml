@@ -1,6 +1,6 @@
 batch_size: 64
 criterion: CrossEntropyLoss
-num_epochs: 20
+num_epochs: 3
 num_iter: 3
 num_workers: 4
 optimizer: Adam
