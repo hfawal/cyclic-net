@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Train the model
     print("Begin training")
     trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
-    trainer.test()
+    print(f"Test Accuracy: {trainer.test():.2f}%")
 
     # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
