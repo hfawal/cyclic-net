@@ -30,7 +30,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
 
     # Data loader parameters from config
-    data_loader = ContrastiveMNISTDataLoader()
+    data_loader = ContrastiveMNISTDataLoader(root="../../data")
     train_loader, val_loader, test_loader = data_loader.load_data(
         val_size=config["val_size"],
         batch_size=config["batch_size"],

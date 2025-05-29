@@ -63,5 +63,4 @@ class HeterogeneousLinearReLU(Neuron):
             bias = self._biases[str(nid)]
             linear_output = F.linear(x, weight, bias)
             outputs[nid] = F.relu(linear_output)
-            # outputs[nid] = F.normalize(activation, p=2, dim=1)
         return outputs

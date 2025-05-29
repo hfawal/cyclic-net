@@ -23,7 +23,7 @@ class MnistDataloader:
     def load_data(self, val_size=0.1):
         # Download and create training dataset
         train_dataset = datasets.MNIST(
-            root='./data',
+            root='../../data',
             train=True,
             download=True,
             transform=self.transform
@@ -31,7 +31,7 @@ class MnistDataloader:
 
         # Download and create test dataset
         test_dataset = datasets.MNIST(
-            root='./data',
+            root='../../data',
             train=False,
             download=True,
             transform=self.transform
