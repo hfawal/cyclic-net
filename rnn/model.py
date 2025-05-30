@@ -23,6 +23,7 @@ class RNN(nn.Module):
             hidden_layers.append(nn.Linear(previous_dim, shape))
             hidden_layers.append(nn.ReLU())
             previous_dim = shape
+        hidden_layers = hidden_layers[:-1]
         self.hidden_layers = nn.Sequential(*hidden_layers)
 
         output_layers = []
@@ -38,6 +39,7 @@ class RNN(nn.Module):
         common = self.common_layers(torch.cat((x, h), dim=1))
         h = self.hidden_layers(common)
         x = self.output_layers(common)
+        h = nn.functional.tanh(h)
         if not self.training:
             x = torch.sigmoid(x)
             x = x.nan_to_num(0.0)

@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     model = RNN(100, [100], [100], [100], 100, output_dim=1, device=device)
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.004)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     model.to(device)
     trainer = RNNTrainer(model, criterion, optimizer, train_data, val_data, test_data, device)
-    trainer.train(10, save_interal=1)
+    trainer.train(10, save_interal=2)

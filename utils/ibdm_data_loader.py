@@ -24,7 +24,7 @@ class IMDBDataLoader:
         return [self.vocab.get(token, self.vocab['<unk>']) for token in self.tokenizer(x)]
 
     def label_pipeline(self, x):
-        return 1 if x == 'pos' else 0
+        return 1 if x == 2 else 0
 
     def load_data(self, val_size = 0.1):
         # Define tokenizer
@@ -35,10 +35,13 @@ class IMDBDataLoader:
 
         train_proportion = 1 - val_size
 
-        # Convert train_iter to list for splitting
+        # Convert train_iter to list and randomly split into train and val sets
         train_data = list(train_iter)
         train_size = int(train_proportion * len(train_data))
-        train_data, val_data = train_data[:train_size], train_data[train_size:]
+        indices = torch.randperm(len(train_data))
+        train_indices = indices[:train_size]
+        val_indices = indices[train_size:]
+        train_data, val_data = [train_data[i] for i in train_indices], [train_data[i] for i in val_indices]
 
         # Try to load cached vocabulary and embeddings
         cache_path = os.path.join(self.cache_dir, 'vocab_embeddings.pkl')
