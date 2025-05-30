@@ -80,7 +80,7 @@ class IMDBDataLoader:
         # Create data loaders
         train_loader = DataLoader(train_data, batch_size=self.batch_size, shuffle=self.shuffle, num_workers=self.num_workers, collate_fn=self.collate_batch)
         val_loader = DataLoader(val_data, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, collate_fn=self.collate_batch)
-        test_loader = DataLoader(test_iter, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, collate_fn=self.collate_batch)
+        test_loader = DataLoader(list(test_iter), batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers, collate_fn=self.collate_batch)
 
         return train_loader, val_loader, test_loader
 
