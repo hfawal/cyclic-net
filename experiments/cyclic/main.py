@@ -7,10 +7,12 @@ from models.cyclic_net.cyclic_net import CyclicNet
 from models.cyclic_net.cyclic_trainer import CyclicTrainer
 from models.cyclic_net.neuron import Neuron
 from utils.contrastive_mnist import ContrastiveMNISTDataLoader
+from utils.contrastive_cifar10 import ContrastiveCIFAR10DataLoader
 import yaml
 import os
 
-from graphs.complete_4n import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
+from graphs.complete_4n_cifar10 import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
+from graphs.complete_4n_cifar10 import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
 
 if __name__ == "__main__":
     config = "cyclic.yaml"  # Path to your YAML config file
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
 
     # Data loader parameters from config
-    data_loader = ContrastiveMNISTDataLoader(root="../../data")
+    data_loader = ContrastiveCIFAR10DataLoader(root="../../data")
     train_loader, val_loader, test_loader = data_loader.load_data(
         val_size=config["val_size"],
         batch_size=config["batch_size"],
