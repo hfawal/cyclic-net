@@ -4,7 +4,7 @@ import torch.optim as optim
 
 from models.simple_nn.simple_nn import SimpleNN
 from models.simple_nn.bp_trainer import BPTrainer
-from utils.data_loader import MnistDataloader
+from utils.mnist_data_loader import MnistDataloader
 import yaml
 import os
 
