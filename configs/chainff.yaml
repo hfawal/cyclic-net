@@ -1,9 +1,0 @@
-criterion: CrossEntropyLoss
-lr: 0.5
-batch_size: 64
-shuffle: true
-num_workers: 4
-val_size: 0.1
-save_dir: chain_ff
-num_epochs: 50
-threshold: 2.0
