@@ -17,7 +17,7 @@ class IMDBDataLoader:
         self.vocab = None
         self.embeddings = None
         self.reverse_vocab = None
-        self.cache_dir = '../../cache'
+        self.cache_dir = './cache'
         os.makedirs(self.cache_dir, exist_ok=True)
 
     def text_pipeline(self, x):
@@ -31,7 +31,7 @@ class IMDBDataLoader:
         self.tokenizer = get_tokenizer('spacy', language='en_core_web_sm')
 
         # Load IMDB dataset
-        train_iter, test_iter = IMDB(split=('train', 'test'), root='../../data')
+        train_iter, test_iter = IMDB(split=('train', 'test'), root='./data')
 
         train_proportion = 1 - val_size
 

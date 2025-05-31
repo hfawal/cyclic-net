@@ -68,7 +68,7 @@ class RNNTrainer:
             val_loss, val_acc = self.validate()
             print(f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}, Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
             if (epoch+1) % save_interal == 0:
-                torch.save(self.model.state_dict(), f"saves/model_{epoch+1}.pth")
+                torch.save(self.model.state_dict(), f"experiments/rnn/saves/model_{epoch+1}.pth")
 
     def test(self):
         self.model.eval()
