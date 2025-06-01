@@ -9,6 +9,20 @@ import torch.nn as nn
 
 
 class ConvReLU(Neuron):
+    """
+    A convolutional neuron that applies ReLU activation to inputs gathered from inneighbors.
+
+    For input neurons:
+        - The input data and label are split and reshaped.
+        - The image is passed through a convolution layer.
+        - The label is projected to a spatial map and combined with the image output.
+        - The combination is convolved again and ReLU-activated.
+
+    For all neurons:
+        - The outputs of all inneighbors are normalized and concatenated along the channel axis.
+        - A final convolution followed by ReLU is applied.
+        - The result is distributed to all output neighbors.
+    """
     def __init__(self,
                  ID: int,
                  inneighbor_dims: Dict[int, Tuple[int, ...]],
@@ -47,18 +61,22 @@ class ConvReLU(Neuron):
             in_channels += input_label_out_channels
             # Add a linear projection layer for the label
             self.label_project = nn.Linear(label_dim[0], label_out_channels * input_data_dim[1] * input_data_dim[2])
+
+            # Input image conv
             self.input_conv = nn.Conv2d(
                 in_channels=input_data_dim[0],
                 out_channels=input_out_channels,
                 kernel_size=input_kernel_size,
                 padding=input_padding)
+
+            # Input image + label conv
             self.input_label_conv = nn.Conv2d(
                 in_channels=input_out_channels + label_out_channels,
                 out_channels=input_label_out_channels,
                 kernel_size=input_label_kernel_size,
                 padding=input_label_padding)
 
-        # Neighbor input Conv
+        # Final neighbor input Conv
         self.conv = nn.Conv2d(
             in_channels=in_channels,
             out_channels=neuron_out_channels,
@@ -96,29 +114,39 @@ class ConvReLU(Neuron):
                              f"{self.input_data_dim} in spatial dimensions, but got: {shapes}")
 
     def compute(self, neighbor_outputs: Dict[int, Tensor], input_data: Tensor = None) -> Dict[int, Tensor]:
+        # Get the device for computation
         device: torch.device = next(self.conv.parameters()).device
+
+        # Normalize and collect outputs from all inneighbors
         inputs: List[Tensor] = [
             F.normalize(neighbor_outputs[nid].to(device), p=2, dim=1)
             for nid in sorted(neighbor_outputs)
         ]
 
+        # If this is an input neuron, handle additional processing
         if self.is_input_neuron and input_data is not None:
+            # Split and reshape raw input and label input
             input_data_dim_flat: int = int(torch.prod(torch.tensor(self.input_data_dim)))
             raw_input: Tensor = input_data[:, :input_data_dim_flat].view(-1, *self.input_data_dim).to(device)
             label_input: Tensor = input_data[:, input_data_dim_flat:].view(-1, *self.label_dim).to(device)
 
+            # Apply convolution to raw image input
             input_out: Tensor = self.input_conv(raw_input)
+
+            # Project label to spatial dimensions
             label_proj: Tensor = self.label_project(label_input).view(
                 -1, 1, self.input_data_dim[1], self.input_data_dim[2]
             )
-            combined: Tensor = torch.cat([input_out, label_proj], dim=1)
 
+            # Concatenate and convolve image and label information
+            combined: Tensor = torch.cat([input_out, label_proj], dim=1)
             inputs.append(F.relu(self.input_label_conv(combined)))
 
+        # Concatenate all inputs along channel dimension
         neuron_input: Tensor = torch.cat(inputs, dim=1)
-        out: Tensor = F.relu(self.conv(neuron_input))
 
-        activated: Tensor = F.relu(out)
+        # Apply the main convolution and ReLU activation
+        activated: Tensor = F.relu(self.conv(neuron_input))
 
-        # Return same output for each outneighbor
+        # Return the result to all output neighbors
         return {nid: activated for nid in self.output_dims}
