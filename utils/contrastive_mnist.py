@@ -39,7 +39,6 @@ class ContrastiveMNISTDataLoader:
                 transform=self.transform
             ),
             num_classes=self.num_classes,
-            flatten_examples=True,
             seed=self.seed
         )
 
@@ -52,7 +51,6 @@ class ContrastiveMNISTDataLoader:
                 transform=self.transform
             ),
             num_classes=self.num_classes,
-            flatten_examples=True,
             seed=self.seed
         )
 

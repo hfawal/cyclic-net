@@ -8,7 +8,6 @@ class ContrastiveDataset(Dataset):
     def __init__(self,
                  base_dataset: Dataset,
                  num_classes: int,
-                 flatten_examples: bool = False,
                  seed: int = 42
                  ):
         """
@@ -16,11 +15,9 @@ class ContrastiveDataset(Dataset):
 
         :param base_dataset: A classification Dataset that yields (example, label)
         :param num_classes: The number of classes in the dataset.
-        :param flatten_examples: Whether the data should be flattened.
         """
 
         self.num_classes = num_classes
-        self.flatten_examples = flatten_examples
 
         # Set PyTorch seed for consistent random number generation.
         self.generator = torch.Generator().manual_seed(seed)
@@ -31,7 +28,7 @@ class ContrastiveDataset(Dataset):
 
         # Get shape of single example.
         example, _ = base_data[0]
-        example_shape = example.view(-1).shape if flatten_examples else example.shape
+        example_shape = example.view(-1).shape
         example_size = example_shape.numel()
         concat_size = example_size + num_classes
         self.original_shape = example_shape
@@ -48,8 +45,8 @@ class ContrastiveDataset(Dataset):
         # Fill the allocated tensors.
         for i, (data, label) in enumerate(base_data):
 
-            # Optionally flatten examples.
-            data_proc = data.view(-1) if flatten_examples else data
+            # Flatten the examples.
+            data_proc = data.view(-1)
 
             # One-hot correct label, concatenate to data.
             label_one_hot = funcs.one_hot(torch.tensor(label), num_classes).float()
@@ -78,14 +75,5 @@ class ContrastiveDataset(Dataset):
         neg = self.neg_examples[idx]
         neu = self.neu_examples[idx]
         label = self.labels[idx]
-
-        # Unflatten the examples if necessary.
-        if not self.flatten_examples:
-            pos_example = pos[:-self.num_classes].reshape(self.original_shape)
-            neg_example = neg[:-self.num_classes].reshape(self.original_shape)
-            neu_example = neu[:-self.num_classes].reshape(self.original_shape)
-            pos = torch.cat([pos_example.view(-1), pos[-self.num_classes:]], dim=0)
-            neg = torch.cat([neg_example.view(-1), neg[-self.num_classes:]], dim=0)
-            neu = torch.cat([neu_example.view(-1), neu[-self.num_classes:]], dim=0)
 
         return pos, neg, neu, label

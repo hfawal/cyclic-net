@@ -149,8 +149,8 @@ class Neuron(ABC):
     def check_shape_dict(self, name: str, value: Any):
         if not isinstance(value, dict):
             self.error(name, "of type dict", type(value))
-        if len(value) == 0:
-            self.error(name, "non-empty", value)
+        # if len(value) == 0:
+        #     self.error(name, "non-empty", value)
         for ID, shape in value.items():
             self.check_ID(name + " key", ID)
             self.check_shape_tuple(name + " value", shape)

@@ -4,21 +4,33 @@ from models.cyclic_net.neuron import Neuron
 from models.cyclic_net.neurons.HeterogeneousLinearReLU import HeterogeneousLinearReLU
 from models.cyclic_net.neurons.HomogeneousLinearReLU import HomogeneousLinearReLU
 from models.cyclic_net.neurons.LinearLogSoftmax import LinearLogSoftmax
+from models.cyclic_net.neurons.conv_logsoftmax import ConvLogSoftmax
+from models.cyclic_net.neurons.conv_relu import ConvReLU
 
 # Each node sends a (10,) vector to every other node (except itself)
 adjacency_list: Dict[int, Dict[int, Tuple[int, ...]]] = {
-    0: {1: (2000,), 2: (2000,), 3: (2000,), -1: (2000,)},
-    1: {0: (2000,), 2: (2000,), 3: (2000,), -1: (2000,)},
-    2: {0: (2000,), 1: (2000,), 3: (2000,), -1: (2000,)},
-    3: {0: (2000,), 1: (2000,), 2: (2000,), -1: (2000,)}
+    0: {1: (1, 32, 32), 2: (1, 32, 32), 3: (1, 32, 32), -1: (1, 32, 32)},
+    1: {0: (1, 32, 32), 2: (1, 32, 32), 3: (1, 32, 32), -1: (1, 32, 32)},
+    2: {0: (1, 32, 32), 1: (1, 32, 32), 3: (1, 32, 32), -1: (1, 32, 32)},
+    3: {0: (1, 32, 32), 1: (1, 32, 32), 2: (1, 32, 32), -1: (1, 32, 32)}
 }
+
+preprocess_neuron_outneighbor_dims: Dict[int, Tuple[int, ...]] = {
+    0: (1, 32, 32),
+    1: (1, 32, 32),
+    2: (1, 32, 32),
+    3: (1, 32, 32)
+}
+
+
+preprocess_neuron_id = 10
 
 # Readout node takes in outputs from all nodes
 readout_inneighbor_dims: Dict[int, Tuple[int, ...]] = {
-    0: (2000,),
-    1: (2000,),
-    2: (2000,),
-    3: (2000,)
+    0: (1, 32, 32),
+    1: (1, 32, 32),
+    2: (1, 32, 32),
+    3: (1, 32, 32)
 }
 
 init_lr: Dict[int, float] = {
@@ -26,6 +38,7 @@ init_lr: Dict[int, float] = {
     1: 0.1,
     2: 0.1,
     3: 0.1,
+    preprocess_neuron_id: 0.1,
 }
 
 thresholds: Dict[int, float] = {
@@ -33,6 +46,7 @@ thresholds: Dict[int, float] = {
     1: 1,
     2: 1,
     3: 1,
+    preprocess_neuron_id: 1,
 }
 
 readout_init_lr: float = 0.01
@@ -47,6 +61,9 @@ def invert_graph() -> Dict[int, Dict[int, Tuple[int, ...]]]:
                 inneighbors[dst] = {}
             inneighbors[dst][src] = shape
 
+    for dst, shape in preprocess_neuron_outneighbor_dims.items():
+        inneighbors[dst][preprocess_neuron_id] = shape
+
     return inneighbors
 
 
@@ -54,23 +71,65 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
     inneighbor_dims = invert_graph()
     neurons = {}
     for nid in adjacency_list:
-        neurons[nid] = HomogeneousLinearReLU(
+        neurons[nid] = ConvReLU(
             ID=nid,
             inneighbor_dims=inneighbor_dims[nid],
             output_dims=adjacency_list[nid],
-            input_data_dim=(3082,),
-            is_input_neuron=True,
+            input_data_dim=(3, 32, 32),
+            is_input_neuron=False,
+            label_dim=(10,),
+            input_out_channels=1,
+            input_kernel_size=3,
+            input_padding=1,
+            label_out_channels=1,
+            input_label_out_channels=2,
+            input_label_kernel_size=3,
+            input_label_padding=1,
+            neuron_out_channels=1,
+            neuron_kernel_size=3,
+            neuron_padding=1
         )
+
+    neurons[preprocess_neuron_id] = ConvReLU(
+            ID=preprocess_neuron_id,
+            inneighbor_dims={},
+            output_dims=preprocess_neuron_outneighbor_dims,
+            input_data_dim=(3, 32, 32),
+            is_input_neuron=True,
+            label_dim=(10,),
+            input_out_channels=1,
+            input_kernel_size=3,
+            input_padding=1,
+            label_out_channels=1,
+            input_label_out_channels=2,
+            input_label_kernel_size=3,
+            input_label_padding=1,
+            neuron_out_channels=1,
+            neuron_kernel_size=3,
+            neuron_padding=1
+        )
+
     return neurons
 
 
 def build_readout_layer() -> Neuron:
-    return LinearLogSoftmax(
+    return ConvLogSoftmax(
         ID=-1,
         inneighbor_dims=readout_inneighbor_dims,
         output_dims={-2: (10,)},
         input_data_dim=(3082,),
         is_input_neuron=False,
+        label_dim=(10,),
+        input_out_channels=1,
+        input_kernel_size=3,
+        input_padding=1,
+        label_out_channels=1,
+        input_label_out_channels=2,
+        input_label_kernel_size=3,
+        input_label_padding=1,
+        neuron_out_channels=10,
+        neuron_kernel_size=3,
+        neuron_padding=1
     )
 
 
