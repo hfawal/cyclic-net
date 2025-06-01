@@ -80,7 +80,12 @@ class ConvLogSoftmax(Neuron):
     @property
     def params(self) -> List[Parameter]:
         # Return all parameters registered in this module
-        return list(self.parameters())
+        if self.is_input_neuron:
+            return list(self.conv.parameters()) + \
+                list(self.label_project.parameters()) + \
+                list(self.input_conv.parameters()) + \
+                list(self.input_label_conv.parameters())
+        return list(self.conv.parameters())
 
     def compute(self,
                 neighbor_outputs: Dict[int, Tensor],

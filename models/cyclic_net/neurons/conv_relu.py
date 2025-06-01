@@ -109,7 +109,8 @@ class ConvReLU(Neuron):
 
         # Check if all input shapes match self.input_data_dim except for the channel dimension
         shapes = list(value.values())
-        if not all(len(shape) == len(self.input_data_dim) and shape[1:] == self.input_data_dim[1:] for shape in shapes):
+        if not all(len(shape) == len(self.input_data_dim) and
+                   shape[1:] == self.input_data_dim[1:] for shape in shapes):
             raise ValueError(f"All inneighbor_dims must match input_data_dim "
                              f"{self.input_data_dim} in spatial dimensions, but got: {shapes}")
 
@@ -118,8 +119,13 @@ class ConvReLU(Neuron):
         device: torch.device = next(self.conv.parameters()).device
 
         # Normalize and collect outputs from all inneighbors
+        # inputs: List[Tensor] = [
+        #     F.normalize(neighbor_outputs[nid].to(device), p=2, dim=1)
+        #     for nid in sorted(neighbor_outputs)
+        # ]
+
         inputs: List[Tensor] = [
-            F.normalize(neighbor_outputs[nid].to(device), p=2, dim=1)
+            neighbor_outputs[nid].to(device)
             for nid in sorted(neighbor_outputs)
         ]
 

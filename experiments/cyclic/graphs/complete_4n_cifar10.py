@@ -34,11 +34,11 @@ readout_inneighbor_dims: Dict[int, Tuple[int, ...]] = {
 }
 
 init_lr: Dict[int, float] = {
-    0: 0.1,
-    1: 0.1,
-    2: 0.1,
-    3: 0.1,
-    preprocess_neuron_id: 0.1,
+    0: 0.001,
+    1: 0.001,
+    2: 0.001,
+    3: 0.001,
+    preprocess_neuron_id: 0.001,
 }
 
 thresholds: Dict[int, float] = {
@@ -49,7 +49,7 @@ thresholds: Dict[int, float] = {
     preprocess_neuron_id: 1,
 }
 
-readout_init_lr: float = 0.01
+readout_init_lr: float = 0.001
 
 
 def invert_graph() -> Dict[int, Dict[int, Tuple[int, ...]]]:
@@ -79,15 +79,15 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
             is_input_neuron=False,
             label_dim=(10,),
             input_out_channels=1,
-            input_kernel_size=3,
-            input_padding=1,
+            input_kernel_size=9,
+            input_padding=4,
             label_out_channels=1,
             input_label_out_channels=2,
-            input_label_kernel_size=3,
-            input_label_padding=1,
-            neuron_out_channels=1,
-            neuron_kernel_size=3,
-            neuron_padding=1
+            input_label_kernel_size=9,
+            input_label_padding=4,
+            neuron_out_channels=10,
+            neuron_kernel_size=9,
+            neuron_padding=4
         )
 
     neurons[preprocess_neuron_id] = ConvReLU(
@@ -98,15 +98,15 @@ def build_linear_relu_neurons() -> Dict[int, Neuron]:
             is_input_neuron=True,
             label_dim=(10,),
             input_out_channels=1,
-            input_kernel_size=3,
-            input_padding=1,
+            input_kernel_size=9,
+            input_padding=4,
             label_out_channels=1,
             input_label_out_channels=2,
-            input_label_kernel_size=3,
-            input_label_padding=1,
-            neuron_out_channels=1,
-            neuron_kernel_size=3,
-            neuron_padding=1
+            input_label_kernel_size=9,
+            input_label_padding=4,
+            neuron_out_channels=10,
+            neuron_kernel_size=9,
+            neuron_padding=4
         )
 
     return neurons
@@ -117,19 +117,19 @@ def build_readout_layer() -> Neuron:
         ID=-1,
         inneighbor_dims=readout_inneighbor_dims,
         output_dims={-2: (10,)},
-        input_data_dim=(3082,),
+        input_data_dim=(3, 32, 32),
         is_input_neuron=False,
         label_dim=(10,),
         input_out_channels=1,
-        input_kernel_size=3,
-        input_padding=1,
+        input_kernel_size=9,
+        input_padding=4,
         label_out_channels=1,
         input_label_out_channels=2,
-        input_label_kernel_size=3,
-        input_label_padding=1,
+        input_label_kernel_size=9,
+        input_label_padding=4,
         neuron_out_channels=10,
-        neuron_kernel_size=3,
-        neuron_padding=1
+        neuron_kernel_size=9,
+        neuron_padding=4
     )
 
 
