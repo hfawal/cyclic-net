@@ -53,7 +53,7 @@ if __name__ == "__main__":
     os.makedirs(config["save_dir"], exist_ok=True)
     save_path = os.path.join(".", config["save_dir"])
     os.makedirs(save_path, exist_ok=True)
-    with open(os.path.join(save_path, "config_final_model.yaml"), "w") as f_out:
+    with open(os.path.join(save_path, "cifar10_config_final_model.yaml"), "w") as f_out:
         yaml.dump(config, f_out)
 
     # Train the model
@@ -62,4 +62,4 @@ if __name__ == "__main__":
     print(f"Test Accuracy: {trainer.test():.2f}%")
 
     # Save final model
-    torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
+    torch.save(model.state_dict(), os.path.join(save_path, "cifar10_final_model.pt"))
