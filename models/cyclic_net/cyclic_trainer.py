@@ -75,6 +75,8 @@ class CyclicTrainer:
                 size += torch.tensor(dim).prod()
             self.avg_output_sizes[ID] = size / len(neuron.output_dims)
 
+        # Move model to device.
+        self.model.to(self.device)
 
     def compute_goodness(self,
                          activations_source: Dict[int, Dict[int, Tensor]]
@@ -165,9 +167,6 @@ class CyclicTrainer:
         }
 
         torch.autograd.set_detect_anomaly(True)
-
-        # Move model to device.
-        self.model.to(self.device)
 
         # Main training loop.
         for epoch in range(1, num_epochs + 1):

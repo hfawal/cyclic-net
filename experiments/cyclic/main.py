@@ -12,7 +12,7 @@ import yaml
 import os
 
 from graphs.complete_4n_cifar10 import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
-from graphs.complete_4n_cifar10 import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
+from graphs.complete_4n_mnist import build_linear_relu_neurons, build_readout_layer, get_lrs, get_thresholds
 
 if __name__ == "__main__":
     config = "cyclic.yaml"  # Path to your YAML config file
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
 
     # Data loader parameters from config
-    data_loader = ContrastiveCIFAR10DataLoader(root="../../data")
+    data_loader = ContrastiveMNISTDataLoader(root="../../data")
     train_loader, val_loader, test_loader = data_loader.load_data(
         val_size=config["val_size"],
         batch_size=config["batch_size"],
@@ -63,3 +63,6 @@ if __name__ == "__main__":
 
     # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
+
+    # model.load_state_dict(torch.load("./saves/final_model.pt", map_location=device))
+    # print(f"Loaded Model Accuracy: {trainer.test():.2f}%")
