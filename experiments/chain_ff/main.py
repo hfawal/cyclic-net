@@ -1,3 +1,5 @@
+import pickle
+
 import torch
 import torch.nn as nn
 from models.chain_ff.chain_ff import ChainFF
@@ -37,8 +39,13 @@ if __name__ == "__main__":
         yaml.dump(config, f_out)
 
     # Train the model
-    trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
+    results = trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
     trainer.test()
+
+    with open(os.path.join(save_path, "cyclic_mnist_results.pkl"), "wb") as f:
+        pickle.dump(results, f)
 
     # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
+
+    # model.load_state_dict(torch.load("./saves/final_model.pt", map_location=device))

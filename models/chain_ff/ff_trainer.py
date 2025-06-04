@@ -20,7 +20,13 @@ class FFTrainer:
         return (activations ** 2).sum(dim=1)
 
     def train(self, num_epochs):
-        torch.autograd.set_detect_anomaly(True)
+        results = {
+            "validation_accuracy": [],
+            "neuron_loss": {ID: [] for ID in self.model.neurons.keys()},
+            "readout_loss": []
+        }
+
+        # torch.autograd.set_detect_anomaly(True)
         # current_lr = self.lr
         for epoch in range(num_epochs):
             current_lr = self.lr * 0.5 * (1 + math.cos(math.pi * epoch / num_epochs))
@@ -53,6 +59,7 @@ class FFTrainer:
                     # Manual gradient update
                     layer.zero_grad()
                     loss.backward(retain_graph=True)
+                    results["neuron_loss"][i].append(loss.item())
                     with torch.no_grad():
                         for param in layer.parameters():
                             param -= current_lr * param.grad
@@ -65,13 +72,15 @@ class FFTrainer:
                 loss = self.criterion(outputs, labels)
                 self.model.readout.zero_grad()
                 loss.backward()
+                results["readout_loss"].append(loss.item())
                 with torch.no_grad():
                     for param in self.model.readout.parameters():
                         param -= current_lr * param.grad
 
             validation_accuracy = self.validate()
-
+            results["validation_accuracy"].append(validation_accuracy)
             print(f'Epoch [{epoch + 1}/{num_epochs}], Validation Accuracy: {validation_accuracy:.2f}%')
+        return results
 
     def validate(self):
         self.model.eval()

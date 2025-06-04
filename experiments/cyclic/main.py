@@ -1,3 +1,4 @@
+import pickle
 from typing import Dict, Tuple
 
 import torch
@@ -58,8 +59,11 @@ if __name__ == "__main__":
 
     # Train the model
     print("Begin training")
-    trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
+    results = trainer.train(num_epochs=config["num_epochs"])  # Adjust the number of epochs as needed
     print(f"Test Accuracy: {trainer.test():.2f}%")
+
+    with open(os.path.join(save_path, "chain_ff_results.pkl"), "wb") as f:
+        pickle.dump(results, f)
 
     # Save final model
     torch.save(model.state_dict(), os.path.join(save_path, "final_model.pt"))
